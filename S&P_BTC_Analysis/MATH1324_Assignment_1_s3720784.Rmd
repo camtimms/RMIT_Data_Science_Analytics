@@ -1,0 +1,275 @@
+---
+title: "MATH1324 Assignment 1"
+subtitle: Statistical analysis of the S&P 500 and Bitcoin prices
+output:
+  html_notebook: default
+  pdf_document: default
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+## Student Details
+
+Campbell Timms (s3720784)
+
+## Abstract
+
+The S&P 500 (SPX) is a an index fund which holds 500 of the best performing publicly traded companies from the US. First starting in 1957 by the credit agency Standard and Poor's (S&P), it's often regarded as a good indicator of the US economy. Bitcoin on the other hand is far newer and was created to decentralise money from any person or government and was introduced to the world in 2009. It is the worlds most popular cryptocurrency and is also publicly traded online and recorded via the blockchain.
+
+Although they may seemingly sound like they are not related, this report aims to show the correlation between the two based on their trading price over the last 6 years from August 1st 2028 to August 1st 2024.
+
+<b>Load Packages used for this assignment</b>
+
+```{r, echo=TRUE, results=FALSE}
+library(readr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(timetk)
+```
+
+## Data Preparation
+
+Import the data and prepare it for analysis. Show your code.
+
+```{r, echo=TRUE}
+# Import data sets and set data types to each column
+#setwd("~/Uni/2024/Applied Analytics/Assignment 1")
+SPX <- read_csv("S&P 500-1.csv", col_types = cols('Date' = col_date(format = '%d/%m/%Y'),
+                                                  'Price' = col_number()))
+BTC <- read_csv("BTC-USD-1.csv", col_types = cols('Date' = col_date(format = "%d/%m/%Y"),
+                                                  'Adj Close' = col_number()))
+# Check data set structure
+#str(SPX)
+#str(BTC)
+
+
+```
+
+After checking the code for missing values and duplicates none were found and the data sets seems to be clean and complete.
+
+## Task 1
+
+<b>Descriptive Statistics:</b> Calculate, for example, the mean, median, mode, range, standard deviation, etc of both the S&P data and Bitcoin data.
+
+Compare the measures of central tendency and variability between the two data sets.
+
+```{r}
+# Calculate various descriptive statistics
+
+#For some reason R does not include a function for the mode of a data set. This function was found online at: https://sqlpad.io/tutorial/mode-calculation-r-step-by-step-guide/
+
+Mode <- function(x) {
+  unique_x <- unique(x)
+  tabulated_x <- tabulate(match(x, unique_x))
+  mode_value <- unique_x[which.max(tabulated_x)]
+  return(mode_value)
+}
+
+SPX_mean <-   mean(SPX$Price)
+SPX_median <- median(SPX$Price)
+SPX_mode <-   Mode(SPX$Price)
+SPX_min <-    min(SPX$Price)
+SPX_max <-    max(SPX$Price)
+SPX_sd <-     sd(SPX$Price)
+
+BTC_mean <-   mean(BTC$'Adj Close')
+BTC_median <- median(BTC$'Adj Close')
+BTC_mode <-   Mode(BTC$'Adj Close')
+BTC_min <-    min(BTC$'Adj Close')
+BTC_max <-    max(BTC$'Adj Close')
+BTC_sd <-     sd(BTC$'Adj Close')
+
+# Create a data frame to store and display these values
+
+stats <- data.frame(
+  Name = c('SPX','BTC'),
+  Mean = c(SPX_mean, BTC_mean),
+  Median = c(SPX_median, BTC_median),
+  Mode = c(SPX_mode, BTC_mode),
+  Min = c(SPX_min, BTC_min),
+  Max = c(SPX_max, BTC_max),
+  Standard_Deviation = c(SPX_sd, BTC_sd)
+)
+
+stats
+```
+
+For the S&P 500 first we can see that its mean of \$3827 is actually below that of the median and the mode showing the mean is slightly skewed to the left while it's standard deviation is \$777. Compare this to the central tendency to Bitcoin where the opposite is true where the mean is more significantly higher than the median showing the mean is skewed to the right.
+
+More significantly, the variability of the S&P 500 is far below that of Bitcoin where the standard deviation of the S&P is 20.3% of the mean compared with Bitcoin's standard deviation of \$19 163 which is 71.6% of it's mean. This just shows that Bitcoin is far greater distributed compared to the S&P 500.
+
+## Task 2
+
+By drawing a plot, showing the trend or pattern of S&P data and Bitcoin data over six years (for example, does it have an increasing or decreasing trend or pattern, that is whether it's going up, down, or staying relatively flat), for each data set separately, and interpreting the findings. Additionally, create a plot that shows the correlation calculated every six months between the S&P data and Bitcoin data over six years.
+
+```{r}
+# Plot the S&P 500 Price
+ggplot(data = SPX, mapping = aes(x = Date, y = Price, color = Price))+
+  labs(title ='S&P 500 Stock Price',y='Price ($USD)', x= 'Date')+
+  geom_path() +
+  scale_color_gradient(low = 'red', high = 'green') +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  scale_y_continuous(breaks = seq(0,max(SPX$Price), by = 1000),limits = c(0, max(SPX$Price)))+
+  theme_light()
+```
+
+Here we can see the S&P starts at just below \$3000 and decreases slightly before growing before a large crash at the start of 2020, which we can largely attribute to the COVID19 pandemic and the affect it had of the economy. With the stimulus packages and incentives during 2020 and 21 we see it recover and grow to a high at the end of 2021. Since then it decreasing slightly and remained flat until the last year in 2024 where we are reaching all time highs.
+
+The overall trend of the stock price is positive and is at a high at the end of the data and as of writing this it is still over \$5400.
+
+```{r}
+# Plot the Bitcoin Price
+ggplot(data = BTC, mapping = aes(x = Date, y = `Adj Close`, colour = `Adj Close`))+
+  labs(title ='BTC Stock Price',y='Price ($USD)', x= 'Date')+
+  geom_path() +
+  scale_color_gradient(low = 'red', high = 'green') +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  scale_y_continuous(breaks = seq(0,max(BTC$`Adj Close`), by = 10000),limits = c(0, max(BTC$`Adj Close`)))+
+  theme_light()
+```
+
+Bitcoin from the start of this period and through most of 2020 remained pretty flat when comparing it to the highs it reached in 2021. From the end of 2020 to it's two peaks in 2021 Bitcoin's price x 6 in value although through 2022 and 2023 it seemed that Bitcoin would return from it's highs back towards it's evaluation before 2021. This although was only momentarily as it showed steady growth by the end of 2023 and a meteoric rise in 2024 also reaching all time highs at the start of this year.
+
+Obviously the rise in the price of Bitcoin is far greater than that of the S&P 500 but as we saw at the start of 2023 it also can lose that same value just as fast. At the time of writing the price of Bitcoin has fallen almost 16% since Aug 1st although the trend since 2018 has been very positive and is 6 x the value it was then, it's clear the trend had been up as a whole although very volatile.
+
+```{r}
+# Correlation plot
+# First combine the data sets 
+stockprice <- full_join(BTC, SPX, by = 'Date')
+stockprice <- stockprice %>% rename(SPX = Price, BTC = `Adj Close`)
+
+#Expand the date columns
+stockprice <- stockprice %>%
+  mutate(Year = as.numeric(format(Date, "%Y")),
+         Month = as.numeric(format(Date, "%m")))
+
+# Create new column to assign each 6 month period. To make things easier I am using the timetk package to group the date column into half-year periods. Timetk: https://business-science.github.io/timetk/index.html
+stockprice <- stockprice %>% mutate_by_time(Date,
+  .by = 'halfyear',
+  Period = (Year - min(stockprice$Year)) *2 + ifelse(Month %in% 1:6, 1, 2)
+)
+
+# Calculate correlation coefficient in each 6 month period
+correlation <- stockprice %>% group_by(Period) %>% summarise(Correlation = cor(SPX,BTC, use = "complete.obs"), Year = first(Year)) %>% select(Year,Period,Correlation)
+
+# Plot the correlation data 
+ggplot(data = correlation, mapping = aes(x = Period, y = Correlation))+
+  labs(title = 'Correlation between SPX and BTC every 6 months', y = 'Correlation Coefficient', x = 'Year')+
+  geom_col(fill = 'blue4')+
+  ylim(-1,1)+
+  scale_x_continuous(breaks = correlation$Period,
+                     labels = paste0(substr(correlation$Year, 3, 4), 
+                                     ifelse(correlation$Period %% 2 == 1, "H1", "H2")))+
+  theme_light()
+
+```
+
+The above graph shows the pearson correlation coefficient calculated every 6 months which gives a score between -1 and 1 based on if they are negatively or positively correlated or 0 if they show no correlation. We can see overall the price of the S&P 500 and the price of Bitcoin show strong positive correlation coefficients except for 19H2, 21H1 and 24H2 where there is reasonably negative correlation or no strong correlation.
+
+## Task 3
+
+Compute the correlation coefficient between S&P data and Bitcoin data to explore if there's any relationship between the two. Visualize the relation/correlation using scatter plots and interpret the findings. [Hint: A scatter plot visually represents this relationship. While the correlation coefficient (a number) tells you how strongly the two variables are related, the scatter plot shows the pattern or trend of this relationship. So, while the correlation itself is a number, the scatter plot helps you visualize how the two data sets are related.
+
+```{r}
+# This is a chunk for your Task 3. 
+
+# Compute the correlation coefficient
+correlation_coefficient <- cor(stockprice$SPX, stockprice$BTC, use = "complete.obs")
+
+correlation_coefficient
+```
+
+Here we can see using the whole of both data sets of the S&P 500 and Bitcoin over the 5 years the correlation coefficient is 0.8977 which on the scale of 0 to 1 shows high correlation.
+
+```{r,results=FALSE}
+# Create a scatter plot
+ggplot(stockprice, aes(x = SPX, y = BTC)) +
+  geom_point(color = 'blue4') +
+  labs(title = paste0('Correlation between S&P 500 and Bitcoin, r = ' , round(correlation_coefficient,4)),
+       x = 'S&P 500 Price $(USD)',
+       y = 'Bitcoin Price $(USD)') +
+  xlim(0,SPX_max)+
+  geom_smooth(method = 'lm', color = 'red')+
+  theme_light()
+
+```
+
+If we plot the S&P 500 against the price of Bitcoin for the same day we can see a trend where a high price in one of either the stock or cryptocurrency shows a relative high price in the other. This shows a positive linear relationship between the two.
+
+## Task 4
+
+Assess whether the S&P data and Bitcoin data follow a normal distribution. Analyze each dataset separately and interpret the findings.
+
+To see if the data follows a normal distribution a histogram can be used to evaluate the shape of the data.
+
+```{r,results=FALSE}
+# Calculate the bin width based on the histogram
+nbins = 50
+BTC_binwidth <- diff(range(stockprice$BTC)) / nbins 
+n_BTC <- length(stockprice$BTC)
+
+# Because SPX is a different length to BTC we'll have to remove the missing values.
+SPX_binwidth <- diff(range(stockprice$SPX, na.rm = TRUE)) / nbins
+n_SPX <- sum(!is.na(stockprice$SPX))
+
+# Histogram with normal distribution line for S&P 500
+# To add a normal distribution geom_function was used to plot a function on top of the graph: https://ggplot2.tidyverse.org/reference/geom_function.html
+
+ggplot(stockprice, aes(x = SPX)) +
+  geom_histogram(colour = 'lightblue1', fill = 'blue4', bins = nbins) +
+  geom_function(fun = function(x) dnorm(x, mean = SPX_mean, sd = SPX_sd) * n_SPX * SPX_binwidth, 
+                color = 'red', linewidth = 1) +
+  labs(title = 'Hisogram of S&P 500 Price over 6 years (2018-2024)\ncompared to a normal distribution',
+       y = 'Frequency',
+       x = 'SPX Price $(USD)')
+```
+
+If we compare a histogram of the S&P 500 for the 6 years of data against a normal distribution centred around the mean of the data we can see it doesn't follow a normal distribution well. When we saw the S&P price earlier it showed peaks over certain periods but as a whole trended upwards. The peaks of the histogram would show if the stock price was stagnant or flat for longer periods of time as that price would stay in the same bracket more frequently. For example the recent highs in 2024 of a price \$5000+ has only been for a short time and hence is shows as less frequent in the histogram.
+
+```{r}
+# Histogram with normal distribution line for Bitcoin
+ggplot(stockprice, aes(x = BTC)) +
+  geom_histogram(colour = 'yellow2', fill = 'orange', bins = nbins) +
+  geom_function(fun = function(x) dnorm(x, mean = BTC_mean, sd = BTC_sd) * n_BTC * BTC_binwidth, 
+                color = 'red', linewidth = 1) +
+  labs(title = 'Hisogram of Bitcoin Price over 6 years (2018-2024)\ncompared to a normal distribution',
+       y = 'Frequency',
+       x = 'BTC Price $(USD)')
+
+```
+
+The same can be said for the price of Bitcoin as the largest peak of the histogram is when the price was below \$20,000 as the price of Bitcoin stayed below that for a relatively long time before 2021. Something to note about the normal distribution fitted to this histogram is because of the high standard deviation it has caused it to be very wide and flat. We can also see the long tail to the histogram and the ideal normal distribution as the price of Bitcoin extends very far as it rapidly increased in value.
+
+## AI Tools
+
+AI tools were used and were very helpful in completing this assignment. The main AI service used was ChatGPT, it is the largest and most well known AI model and is very powerful. The majority of the time it was used to solve small problems and remind me of the correct way to use the functions learned during this course but also suggested new methods and functions I wasn't familiar with.
+
+Great effort was put into understanding it's output and integrating it into my own code so it did what I intended it to do. It was also great at helping me add more details and use more complicated functions I wouldn't have been able to do myself with just the documentation alone. Several times I'd be referencing the documentation to check ChatGPT was making sound code and also gave me more insight to the arguments I wanted to use.
+
+Using new AI models along with traditional web searching for examples and reading the documentation managed to be a suitable method to learn and complete tasks while understanding them.
+
+## References
+
+ChatGPT. (2024). *ChatGPT*. OpenAI. <https://openai.com>
+
+RMIT University. (2024). *Applied analytics course notes*. <https://astral-theory-157510.appspot.com/secured/index.html>
+
+Dancho, M., & Vaughan, D. (2023). *timetk: A tool kit for working with time series* (Version 2.9.0). <https://business-science.github.io/timetk/>
+
+Investopedia. (2024). *Bitcoin*. <https://www.investopedia.com/terms/b/bitcoin.asp>
+
+Investopedia. (2024). *S&P 500*. <https://www.investopedia.com/terms/s/sp500.asp>
+
+R Core Team. (2024). *R: A language and environment for statistical computing*. R Foundation for Statistical Computing. <https://www.R-project.org/>
+
+ScienceDirect. (2024). *Pearson correlation coefficient*. <https://www.sciencedirect.com/topics/computer-science/pearson-correlation>
+
+Wickham, H., Bryan, J., & Hester, J. (2024). *readr: Read rectangular text data* (Version 2.1.5). <https://readr.tidyverse.org>
+
+Wickham, H., Chang, W., Henry, L., Pedersen, T. L., Takahashi, K., Wilke, C., Woo, K., Yutani, H., & Dunnington, D. (2024). *ggplot2: Create elegant data visualisations using the grammar of graphics* (Version 3.5.1). <https://ggplot2.tidyverse.org>
+
+Wickham, H., François, R., Henry, L., Muller, K., & Vaughan, D. (2023). *dplyr: A grammar of data manipulation* (Version 1.1.4). <https://dplyr.tidyverse.org>
+
+Wickham, H., & Vaughan, D. (2024). *tidyr: Tidy messy data* (Version 1.3.1). <https://tidyr.tidyverse.org>
