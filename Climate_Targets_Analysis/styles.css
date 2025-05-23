@@ -1,0 +1,75 @@
+slides>slide.title-slide {
+    background-image: url('wind_turbine.jpg');
+    background-size: 100% 100%;
+}
+
+slides > slide:not(.title-slide)::before {
+    content: ""; /* Create a pseudo-element */
+    background-image: url('wind_turbine.jpg'); /* Background image */
+    background-size: cover; /* Cover the entire slide */
+    background-position: center; /* Center the image */
+    background-repeat: no-repeat; /* Prevent tiling */
+    position: absolute; /* Position it absolutely */
+    top: 0; /* Align to the top */
+    left: 0; /* Align to the left */
+    right: 0; /* Stretch to the right */
+    bottom: 0; /* Stretch to the bottom */
+    opacity: 0.2; /* Set opacity for the overlay */
+    z-index: -1; /* Send the overlay behind other content */
+}
+
+
+/* Styles for regular text in slides */
+slides > slide {
+    color: black; /* Set regular text color to black */
+}
+
+/* Styles for headings in all slides */
+slides > slide h1,
+slides > slide h2,
+slides > slide h3,
+slides > slide h4,
+slides > slide h5,
+slides > slide h6 {
+    color: white; /* Set heading color to white */
+    text-shadow: 
+        -1px -1px 0 #000,  
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000; /* Create a black outline effect for headings */
+}
+
+/* Styles for text on the title slide */
+slides > slide.title-slide {
+    color: black; /* Set title text color to black */
+}
+
+/* Ensure headings on the title slide have the same style */
+slides > slide.title-slide h1,
+slides > slide.title-slide h2,
+slides > slide.title-slide h3,
+slides > slide.title-slide h4,
+slides > slide.title-slide h5,
+slides > slide.title-slide h6 {
+    color: white; /* Set title heading color to white */
+    text-shadow: 
+        -1px -1px 0 #000,  
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000; /* Create a black outline effect for title headings */
+}
+
+/* Styles for author text on the title slide */
+slides > slide.title-slide .author {
+    color: black; /* Set author text color to black */
+}
+
+/* Styles for table text in all slides */
+slides > slide table {
+    color: black; /* Set table text color to black */
+}
+
+slides > slide table td, 
+slides > slide table th {
+    color: black; /* Set cell text color to black */
+}
